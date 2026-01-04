@@ -1,3 +1,6 @@
+/* ===== API BASE URL (Render Backend) ===== */
+const API_BASE = "https://rubic-cube-solver-1.onrender.com";
+
 /* COLORS */
 const COLORS = {
   U: "#ffffff",
@@ -95,14 +98,15 @@ function paint(cell, c) {
   cell.textContent = c;
 }
 
-/* ------- BACKEND SYNC ------- */
+/* ------- BACKEND SYNC (UPDATED) ------- */
 function syncFace(face) {
-  return fetch("http://localhost:5000/api/cube/scan-face", {
+  return fetch(`${API_BASE}/api/cube/scan-face`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ face, cells: faces[face] }),
   });
 }
+
 function syncAll() {
   return Promise.all(ORDER.map(syncFace));
 }
@@ -110,10 +114,10 @@ function syncAll() {
 ORDER.forEach(renderFace);
 syncAll();
 
-/* ------- VALIDATE ------- */
+/* ------- VALIDATE (UPDATED) ------- */
 document.getElementById("validateBtn").onclick = () => {
   syncAll().then(() => {
-    fetch("http://localhost:5000/api/cube/validate")
+    fetch(`${API_BASE}/api/cube/validate`)
       .then((r) => r.json())
       .then((d) => {
         result.textContent = d.valid ? "Cube is valid 👍" : "Error: " + d.error;
@@ -121,9 +125,9 @@ document.getElementById("validateBtn").onclick = () => {
   });
 };
 
-/* ------- SOLVE ------- */
+/* ------- SOLVE (UPDATED) ------- */
 function explain(m) {
-  const f = LABEL[m[0]] + "face",
+  const f = LABEL[m[0]] + " face",
     x = m.slice(1);
   if (x === "2") return `Rotate the ${f} 180° (half turn)`;
   if (x == "'") return `Rotate the ${f} 90° counter-clockwise`;
@@ -132,7 +136,7 @@ function explain(m) {
 
 document.getElementById("solveBtn").onclick = () => {
   syncAll().then(() => {
-    fetch("http://localhost:5000/api/cube/solve")
+    fetch(`${API_BASE}/api/cube/solve`)
       .then(r => r.json())
       .then(d => {
         if (!d.solution) {
@@ -141,11 +145,12 @@ document.getElementById("solveBtn").onclick = () => {
         }
 
         const moves = d.solution.trim().split(/\s+/);
-        window.solutionMoves = moves;   // store globally for step mode
-        renderFullSolution(moves);      // default view
+        window.solutionMoves = moves;
+        renderFullSolution(moves);
       });
   });
 };
+
 function renderFullSolution(moves){
   let html = `
   <div class="solution-box">
